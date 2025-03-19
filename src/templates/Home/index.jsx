@@ -5,6 +5,7 @@ import "./styles.css";
 import { Posts } from "../../components/Posts";
 import { loadPosts } from "../../utils/load-posts";
 import { Button } from "../../components/Button";
+import { TextInput } from "../../components/TextInput";
 
 export class Home extends Component {
   state = {
@@ -12,6 +13,7 @@ export class Home extends Component {
     allPosts: [],
     page: 0,
     postsPerPage: 3,
+    searchValue: "",
   };
 
   async componentDidMount() {
@@ -37,19 +39,50 @@ export class Home extends Component {
     // console.log(page, postsPerPage, nextPage, nextPage + postsPerPage);
   };
 
+  handleChange = (e) => {
+    const { value } = e.target;
+    this.setState({ searchValue: value });
+  };
+
   render() {
-    const { posts, page, postsPerPage, allPosts } = this.state;
+    const { posts, page, postsPerPage, allPosts, searchValue } = this.state;
     const noMorePosts = page + postsPerPage >= allPosts.length;
+
+    const filteredPosts = !!searchValue
+      ? allPosts.filter((post) => {
+          return post.title.toLowerCase().includes(searchValue.toLowerCase());
+        })
+      : posts;
+
     return (
       <section className="container">
-        <Posts posts={posts} />
-        <div className="button-container">
-          <Button
-            text="Load More Posts"
-            onClick={this.loadMorePosts}
-            disabled={noMorePosts}
+        <div className="search-container">
+          {/* !!searchValue && Se eu estiver buscando algo: vai aparecer o elemento  */}
+          {!!searchValue && <h1>Search value: {searchValue}</h1>}
+
+          <TextInput
+            searchValue={searchValue}
+            handleChange={this.handleChange}
           />
-          {/* Esse onClick={this.loadMorePosts} não é um evento, mas sim um atributo */}
+        </div>
+
+        {filteredPosts.length > 0 && <Posts posts={filteredPosts} />}
+
+        {filteredPosts.length === 0 && <p>Não existem posts com esse nome</p>}
+
+        <div className="button-container">
+          {!searchValue && (
+            <>
+              {/* !searchValue && Se eu não estiver buscando algo: vai aparecer o elemento  */}
+
+              <Button
+                text="Load More Posts"
+                onClick={this.loadMorePosts}
+                disabled={noMorePosts}
+              />
+              {/* Esse onClick={this.loadMorePosts} não é um evento, mas sim um atributo */}
+            </>
+          )}
         </div>
       </section>
     );
